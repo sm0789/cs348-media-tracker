@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}All Media — MediaTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>All Media</h1>
+  <a href="/items/add" class="btn btn-primary">+ Add Item</a>
+</div>
+
+{% if items %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Genre</th>
+        <th>Year</th>
+        <th>Description</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td><strong>{{ item.title }}</strong></td>
+        <td>
+          {% if item.type == 'Movie' %}
+            <span class="badge badge-movie">Movie</span>
+          {% elif item.type == 'Book' %}
+            <span class="badge badge-book">Book</span>
+          {% elif item.type == 'Game' %}
+            <span class="badge badge-game">Game</span>
+          {% else %}
+            <span class="badge badge-tv">TV Show</span>
+          {% endif %}
+        </td>
+        <td>{{ item.genre }}</td>
+        <td>{{ item.release_year }}</td>
+        <td style="max-width:300px; color: var(--muted); font-size:0.85rem;">
+          {{ item.description[:80] }}{% if item.description and item.description|length > 80 %}…{% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <a href="/items/{{ item.item_id }}/edit" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="/items/{{ item.item_id }}/delete" style="display:inline;"
+                  onsubmit="return confirm('Delete {{ item.title }}? This cannot be undone.')">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <h3>No media items yet</h3>
+  <p>Add your first movie, book, game, or TV show to get started.</p>
+</div>
+{% endif %}
+{% endblock %}
