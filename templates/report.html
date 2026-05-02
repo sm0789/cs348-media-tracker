@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Media Report — MediaTracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Media Report</h1>
+</div>
+
+<!-- ── FILTERS ── -->
+<div class="filter-card">
+  <h2>🔍 Filter Options</h2>
+  <form method="get" action="/report">
+    <div class="filter-grid">
+
+      <!-- Type dropdown — built dynamically from DB -->
+      <div class="form-group">
+        <label for="type">Type</label>
+        <select id="type" name="type">
+          <option value="">All Types</option>
+          {% for t in types %}
+            <option value="{{ t }}" {% if filters.type == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Genre dropdown — built dynamically from DB -->
+      <div class="form-group">
+        <label for="genre">Genre</label>
+        <select id="genre" name="genre">
+          <option value="">All Genres</option>
+          {% for g in genres %}
+            <option value="{{ g }}" {% if filters.genre == g %}selected{% endif %}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="year_min">Year From</label>
+        <input type="number" id="year_min" name="year_min" placeholder="e.g. 2000"
+               value="{{ filters.year_min or '' }}" min="1800" max="2100" />
+      </div>
+
+      <div class="form-group">
+        <label for="year_max">Year To</label>
+        <input type="number" id="year_max" name="year_max" placeholder="e.g. 2024"
+               value="{{ filters.year_max or '' }}" min="1800" max="2100" />
+      </div>
+
+      <div class="form-group">
+        <label for="status">Log Status</label>
+        <select id="status" name="status">
+          <option value="">Any Status</option>
+          {% for s in ['Want', 'Watching', 'Completed', 'Dropped'] %}
+            <option value="{{ s }}" {% if filters.status == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="rating_min">Min Rating</label>
+        <input type="number" id="rating_min" name="rating_min" placeholder="1"
+               step="0.5" min="1" max="10" value="{{ filters.rating_min or '' }}" />
+      </div>
+
+      <div class="form-group">
+        <label for="rating_max">Max Rating</label>
+        <input type="number" id="rating_max" name="rating_max" placeholder="10"
+               step="0.5" min="1" max="10" value="{{ filters.rating_max or '' }}" />
+      </div>
+
+      <div class="form-group" style="justify-content: flex-end;">
+        <label>&nbsp;</label>
+        <div style="display:flex; gap:8px;">
+          <button type="submit" class="btn btn-primary">Apply</button>
+          <a href="/report" class="btn btn-secondary">Reset</a>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<!-- ── STATS ── -->
+{% if stats %}
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="value">{{ stats.count }}</div>
+    <div class="label">Titles Found</div>
+  </div>
+  <div class="stat-card">
+    <div class="value">{{ stats.avg_rating }}</div>
+    <div class="label">Avg Rating</div>
+  </div>
+  <div class="stat-card">
+    <div class="value">{{ stats.total_logged }}</div>
+    <div class="label">Total Logs</div>
+  </div>
+  <div class="stat-card">
+    <div class="value" style="font-size:1rem; padding-top:4px;">{{ stats.highest_rated }}</div>
+    <div class="label">Highest Rated</div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── RESULTS TABLE ── -->
+{% if results %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Genre</th>
+        <th>Year</th>
+        <th>Avg Rating</th>
+        <th>Completed</th>
+        <th>Watching</th>
+        <th>Want</th>
+        <th>Dropped</th>
+        <th>Total Logs</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td><strong>{{ r.title }}</strong></td>
+        <td>
+          {% if r.type == 'Movie' %}
+            <span class="badge badge-movie">Movie</span>
+          {% elif r.type == 'Book' %}
+            <span class="badge badge-book">Book</span>
+          {% elif r.type == 'Game' %}
+            <span class="badge badge-game">Game</span>
+          {% else %}
+            <span class="badge badge-tv">TV Show</span>
+          {% endif %}
+        </td>
+        <td>{{ r.genre }}</td>
+        <td>{{ r.release_year }}</td>
+        <td>
+          {% if r.avg_rating %}
+            <span class="rating">{{ r.avg_rating }}</span>
+          {% else %}
+            <span class="no-rating">—</span>
+          {% endif %}
+        </td>
+        <td>{{ r.completed_count }}</td>
+        <td>{{ r.watching_count }}</td>
+        <td>{{ r.want_count }}</td>
+        <td>{{ r.dropped_count }}</td>
+        <td>{{ r.log_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty">
+  <h3>No results match your filters</h3>
+  <p>Try adjusting the filters above, or <a href="/report" style="color:var(--accent)">reset them</a>.</p>
+</div>
+{% endif %}
+
+{% endblock %}
